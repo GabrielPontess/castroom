@@ -1,0 +1,69 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: castroom-sqlserver
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: Castroom_password_123
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    restart: unless-stopped
+    networks:
+      - castroom-net
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: castroom-livekit
+    command: --config /etc/livekit.yaml
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "50000-50050:50000-50050/udp"
+    restart: unless-stopped
+    networks:
+      - castroom-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: castroom-backend
+    environment:
+      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=CastroomDb;User Id=sa;Password=Castroom_password_123;TrustServerCertificate=True;Encrypt=False
+      LIVEKIT_API_KEY: devkey
+      LIVEKIT_API_SECRET: dev_secret_super_segura_1234567890
+    ports:
+      - "5000:5000"
+    depends_on:
+      - sqlserver
+      - livekit
+    restart: unless-stopped
+    networks:
+      - castroom-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: castroom-frontend
+    environment:
+      NEXT_PUBLIC_BACKEND_URL: http://localhost:5000
+      NEXT_PUBLIC_LIVEKIT_URL: ws://localhost:7880
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - castroom-net
+
+networks:
+  castroom-net:
+    driver: bridge
+
+volumes:
+  sqlserver-data:
