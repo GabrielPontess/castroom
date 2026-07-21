@@ -32,8 +32,33 @@ interface ClassroomProps {
   onLeave: () => void;
 }
 
-function ParticipantsSidebar() {
+function ParticipantsSidebar({ localParticipantName }: { localParticipantName: string }) {
   const participants = useParticipants();
+  const sortedParticipants = [...participants].sort((leftParticipant, rightParticipant) => {
+    const leftIsTeacher = leftParticipant.attributes?.role === "teacher";
+    const rightIsTeacher = rightParticipant.attributes?.role === "teacher";
+    const leftIsLocal = (leftParticipant.name || leftParticipant.identity) === localParticipantName;
+    const rightIsLocal = (rightParticipant.name || rightParticipant.identity) === localParticipantName;
+    const leftIsPresenting = leftParticipant.isScreenShareEnabled;
+    const rightIsPresenting = rightParticipant.isScreenShareEnabled;
+
+    if (leftIsTeacher !== rightIsTeacher) {
+      return leftIsTeacher ? -1 : 1;
+    }
+
+    if (leftIsPresenting !== rightIsPresenting) {
+      return leftIsPresenting ? -1 : 1;
+    }
+
+    if (leftIsLocal !== rightIsLocal) {
+      return leftIsLocal ? -1 : 1;
+    }
+
+    return (leftParticipant.name || leftParticipant.identity).localeCompare(
+      rightParticipant.name || rightParticipant.identity,
+      "pt-BR",
+    );
+  });
 
   return (
     <section className="side-section">
@@ -42,19 +67,40 @@ function ParticipantsSidebar() {
         <span className="side-count">{participants.length}</span>
       </div>
       <div className="participants">
-        {participants.map((participant) => {
+        {sortedParticipants.map((participant) => {
           const isTeacher = participant.attributes?.role === "teacher";
+          const isLocal = (participant.name || participant.identity) === localParticipantName;
+          const isPresenting = participant.isScreenShareEnabled;
 
           return (
-            <div className="participant" key={participant.identity}>
+            <div className={`participant ${isLocal ? "participant-local" : ""}`} key={participant.identity}>
               <div className="participant-meta">
-                <strong>{participant.name || participant.identity}</strong>
-                <span className="helper participant-state">
-                  <MicIcon width={12} height={12} />
-                  {participant.isMicrophoneEnabled ? "Microfone ativo" : "Microfone desligado"}
-                </span>
+                <div className="participant-topline">
+                  <strong>{participant.name || participant.identity}</strong>
+                  {isLocal ? <span className="participant-self-label">Voce</span> : null}
+                </div>
+
+                <div className="participant-status-row">
+                  <span className={`participant-chip ${participant.isMicrophoneEnabled ? "active" : "muted"}`}>
+                    <MicIcon width={12} height={12} />
+                    {participant.isMicrophoneEnabled ? "Mic on" : "Mic off"}
+                  </span>
+                  <span className={`participant-chip ${participant.isCameraEnabled ? "active" : "muted"}`}>
+                    <CameraIcon width={12} height={12} />
+                    {participant.isCameraEnabled ? "Cam on" : "Cam off"}
+                  </span>
+                </div>
               </div>
-              {isTeacher ? <span className="badge">Professor</span> : null}
+
+              <div className="participant-badges">
+                {isPresenting ? (
+                  <span className="badge participant-badge-presenting">
+                    <ScreenIcon width={12} height={12} />
+                    Apresentando
+                  </span>
+                ) : null}
+                {isTeacher ? <span className="badge">Professor</span> : null}
+              </div>
             </div>
           );
         })}
@@ -194,7 +240,7 @@ export default function Classroom({
         </div>
 
         <aside className="room-side">
-          <ParticipantsSidebar />
+          <ParticipantsSidebar localParticipantName={participantName} />
           <section className="side-section chat-panel">
             <div className="side-header">
               <h3>Chat</h3>

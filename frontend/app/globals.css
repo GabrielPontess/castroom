@@ -652,10 +652,71 @@ select {
   gap: 4px;
 }
 
+.participant-topline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.participant-self-label {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #d9d9dd;
+  font-size: 11px;
+}
+
+.participant-status-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .participant-state {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.participant-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.participant-chip.active {
+  background: rgba(255, 255, 255, 0.05);
+  color: #d6d6db;
+}
+
+.participant-chip.muted {
+  background: rgba(255, 255, 255, 0.03);
+  color: #9c9ca4;
+}
+
+.participant-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.participant-badge-presenting {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.participant-local {
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 .badge {
@@ -804,5 +865,14 @@ select {
 
   .presentation-strip {
     grid-template-columns: 1fr;
+  }
+
+  .participant {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .participant-badges {
+    align-items: flex-start;
   }
 }
