@@ -365,6 +365,16 @@ select {
   gap: 12px;
 }
 
+.device-config-section {
+  display: grid;
+  gap: 12px;
+}
+
+.device-config-grid {
+  display: grid;
+  gap: 12px;
+}
+
 .device-row {
   display: flex;
   align-items: center;

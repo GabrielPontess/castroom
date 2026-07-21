@@ -9,6 +9,9 @@ interface RoomPageProps {
     role?: string;
     camera?: string;
     mic?: string;
+    cameraDeviceId?: string;
+    microphoneDeviceId?: string;
+    speakerDeviceId?: string;
   };
 }
 

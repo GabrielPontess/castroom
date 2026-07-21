@@ -14,6 +14,9 @@ interface RoomPageClientProps {
     role?: string;
     camera?: string;
     mic?: string;
+    cameraDeviceId?: string;
+    microphoneDeviceId?: string;
+    speakerDeviceId?: string;
   };
 }
 
@@ -31,6 +34,9 @@ export default function RoomPageClient({ roomName, searchParams }: RoomPageClien
   const role = searchParams.role === "teacher" ? "teacher" : "student";
   const cameraEnabled = searchParams.camera !== "false";
   const microphoneEnabled = searchParams.mic !== "false";
+  const cameraDeviceId = searchParams.cameraDeviceId?.trim() ?? "";
+  const microphoneDeviceId = searchParams.microphoneDeviceId?.trim() ?? "";
+  const speakerDeviceId = searchParams.speakerDeviceId?.trim() ?? "";
   const joinedRoomRef = useRef(false);
   const hasNotifiedLeaveRef = useRef(false);
 
@@ -189,12 +195,15 @@ export default function RoomPageClient({ roomName, searchParams }: RoomPageClien
       roomName={roomName}
       participantName={name}
       role={role}
-        token={token}
-        audioEnabled={microphoneEnabled}
-        videoEnabled={cameraEnabled}
-        isLeaving={isLeaving}
-        onLeave={() => {
-          void handleLeaveToHome();
+      token={token}
+      audioEnabled={microphoneEnabled}
+      videoEnabled={cameraEnabled}
+      audioDeviceId={microphoneDeviceId}
+      videoDeviceId={cameraDeviceId}
+      audioOutputDeviceId={speakerDeviceId}
+      isLeaving={isLeaving}
+      onLeave={() => {
+        void handleLeaveToHome();
         }}
       />
   );

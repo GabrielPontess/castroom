@@ -11,6 +11,7 @@ import {
   useTracks,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
+import type { RoomOptions } from "livekit-client";
 import { Track } from "livekit-client";
 import { CameraIcon, ChatIcon, DoorIcon, MicIcon, ScreenIcon, TeacherIcon, UsersIcon } from "@/components/Icons";
 import { getLivekitUrl } from "@/lib/runtime-config";
@@ -22,6 +23,9 @@ interface ClassroomProps {
   token: string;
   audioEnabled: boolean;
   videoEnabled: boolean;
+  audioDeviceId: string;
+  videoDeviceId: string;
+  audioOutputDeviceId: string;
   isLeaving: boolean;
   onLeave: () => void;
 }
@@ -83,18 +87,29 @@ export default function Classroom({
   token,
   audioEnabled,
   videoEnabled,
+  audioDeviceId,
+  videoDeviceId,
+  audioOutputDeviceId,
   isLeaving,
   onLeave,
 }: ClassroomProps) {
   const serverUrl = getLivekitUrl();
+  const roomOptions: RoomOptions = {
+    audioCaptureDefaults: audioDeviceId ? { deviceId: audioDeviceId } : undefined,
+    videoCaptureDefaults: videoDeviceId ? { deviceId: videoDeviceId } : undefined,
+    audioOutput: audioOutputDeviceId ? { deviceId: audioOutputDeviceId } : undefined,
+  };
+  const audioOptions = audioEnabled ? (audioDeviceId ? { deviceId: audioDeviceId } : true) : false;
+  const videoOptions = videoEnabled ? (videoDeviceId ? { deviceId: videoDeviceId } : true) : false;
 
   return (
     <LiveKitRoom
       connect
-      audio={audioEnabled}
-      video={videoEnabled}
+      audio={audioOptions}
+      video={videoOptions}
       token={token}
       serverUrl={serverUrl}
+      options={roomOptions}
       data-lk-theme="default"
       onDisconnected={onLeave}
       style={{ minHeight: "100vh" }}
