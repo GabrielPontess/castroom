@@ -4,9 +4,11 @@ import {
   Chat,
   ConnectionStateToast,
   ControlBar,
+  isTrackReference,
   LiveKitRoom,
   ParticipantTile,
   RoomAudioRenderer,
+  type TrackReferenceOrPlaceholder,
   useParticipants,
   useTracks,
 } from "@livekit/components-react";
@@ -67,6 +69,48 @@ function PreviewGrid() {
     { source: Track.Source.ScreenShare, withPlaceholder: false },
   ]);
 
+  const screenShareTracks = tracks.filter((trackReference) => trackReference.source === Track.Source.ScreenShare);
+  const cameraTracks = tracks.filter((trackReference) => trackReference.source === Track.Source.Camera);
+
+  if (screenShareTracks.length > 0) {
+    const primaryScreenShare = screenShareTracks[0];
+    const presenterName = primaryScreenShare.participant.name || primaryScreenShare.participant.identity;
+
+    return (
+      <div className="presentation-layout">
+        <div className="presentation-primary">
+          <div className="presentation-label">
+            <span className="badge badge-strong">
+              <ScreenIcon width={12} height={12} />
+              Apresentando agora
+            </span>
+            <span className="presentation-name">{presenterName}</span>
+          </div>
+
+          <div className="presentation-stage">
+            <ParticipantTile trackRef={primaryScreenShare} />
+          </div>
+        </div>
+
+        <div className="presentation-secondary">
+          <div className="presentation-secondary-header">
+            <h3>Participantes</h3>
+            <span className="side-count">{cameraTracks.length}</span>
+          </div>
+
+          <div className="presentation-strip">
+            {cameraTracks.length === 0 ? <div className="status">Nenhuma camera ativa no momento.</div> : null}
+            {cameraTracks.map((trackReference) => (
+              <div className="presentation-tile" key={getTrackKey(trackReference)}>
+                <ParticipantTile trackRef={trackReference} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (tracks.length === 0) {
     return <div className="status">Aguardando participantes publicarem video...</div>;
   }
@@ -74,10 +118,18 @@ function PreviewGrid() {
   return (
     <div className="video-grid">
       {tracks.map((trackReference) => (
-        <ParticipantTile key={`${trackReference.participant.identity}-${trackReference.source}`} trackRef={trackReference} />
+        <ParticipantTile key={getTrackKey(trackReference)} trackRef={trackReference} />
       ))}
     </div>
   );
+}
+
+function getTrackKey(trackReference: TrackReferenceOrPlaceholder) {
+  if (isTrackReference(trackReference)) {
+    return `${trackReference.participant.identity}-${trackReference.publication.trackSid}`;
+  }
+
+  return `${trackReference.participant.identity}-${trackReference.source}-placeholder`;
 }
 
 export default function Classroom({
